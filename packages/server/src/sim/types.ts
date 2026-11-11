@@ -19,12 +19,19 @@ export interface HostLine {
   body?: string;
   /** For `included` results: the task file that was included. */
   file?: string;
+  /** A raw line printed just before the result (for example Ansible's exception notice). */
+  note?: string;
+  /** A failure that a `rescue:` section handled; counted as rescued, not failed. */
+  rescued?: boolean;
+  /** A failure that `ignore_errors` swallowed; printed with `...ignoring`. */
+  ignored?: boolean;
 }
 
 /** A change to the simulated world, applied when the task that carries it completes. */
 export type Effect =
   | {
       kind: 'vm.create';
+      proxmoxID: number;
       name: string;
       hostname: string;
       template: string;
@@ -75,6 +82,7 @@ export interface DeployScenario {
 export interface ExistingVm {
   /** Resolved VM name. */
   name: string;
+  proxmoxID: number;
   poweredOn: boolean;
   /** `"null"` when unknown. */
   ip: string;
@@ -96,6 +104,14 @@ export interface DeployInput {
   /** True when an earlier deploy already configured the router. */
   routerConfigured: boolean;
   testingEnabled: boolean;
+  /** Names of templates that are built; cloning anything else fails. */
+  builtTemplates: ReadonlySet<string>;
+  /** The VMID the next new VM receives (VMIDs are handed out in creation order). */
+  nextVmId: number;
+  /** Users whose VPN clients get access rules on the router. */
+  grants: ReadonlyArray<{ userID: string; userNumber: number; name: string; accessType: string }>;
+  /** Hypervisor node name, as shown in some task output. */
+  node: string;
 }
 
 /** One step of a simulated template build. */

@@ -9,8 +9,8 @@ export interface ServerOptions {
   dataDir: string | null;
   /** Directory holding the built web UI, if any. */
   publicDir: string | null;
-  /** Simulated seconds per real second; `0` runs every simulated step instantly. */
-  speed: number;
+  /** Simulated seconds per real second; `0` runs every simulated step instantly. Undefined keeps the saved setting. */
+  speed?: number;
   /** Whether the bundled templates start out built. */
   templatesPrebuilt: boolean;
   tls?: { certFile: string; keyFile: string };
@@ -111,7 +111,7 @@ export function parseCli(argv: string[], env: NodeJS.ProcessEnv, defaults: { pub
     port: num(str('--port', 'BATTLEGROUND_PORT'), 8080, 'port'),
     dataDir: resolve(str('--data', 'BATTLEGROUND_DATA_DIR') ?? 'data'),
     publicDir: env.BATTLEGROUND_PUBLIC_DIR ? resolve(env.BATTLEGROUND_PUBLIC_DIR) : defaults.publicDir,
-    speed: num(str('--speed', 'BATTLEGROUND_SPEED'), DEFAULT_SPEED, 'speed'),
+    speed: str('--speed', 'BATTLEGROUND_SPEED') === undefined ? undefined : num(str('--speed', 'BATTLEGROUND_SPEED'), DEFAULT_SPEED, 'speed'),
     templatesPrebuilt: flags.has('--unbuilt-templates') ? false : (env.BATTLEGROUND_TEMPLATES ?? 'built') !== 'unbuilt',
     tls: certFile && keyFile ? { certFile: resolve(certFile), keyFile: resolve(keyFile) } : undefined,
     admin: {

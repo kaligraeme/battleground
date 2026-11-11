@@ -27,11 +27,8 @@ export interface UserRec {
   isAdmin: boolean;
   proxmoxUsername: string;
   passwordHash: string;
-  /**
-   * Only ever holds a password the server generated itself, so an admin can
-   * look it up for a new user. Cleared as soon as the user sets their own.
-   */
-  generatedPassword?: string;
+  /** The password, encrypted, because `GET /user/credentials` hands it back like Ludus does. */
+  passwordEnc: string;
   apiKeyHash: string;
   defaultRangeID: string;
   /** Ranges this user has been given direct access to. */
@@ -90,6 +87,10 @@ export interface RangeRec {
   vms: VmRec[];
   /** The config that the current VMs were last deployed from. */
   deployedConfig?: string;
+  /** The router finished its one-time configuration (later deploys skip it). */
+  routerConfigured: boolean;
+  /** A deploy has written the range's hosts file. */
+  etcHostsWritten: boolean;
   created: string;
   updated: string;
   lastActive: string;
@@ -106,6 +107,8 @@ export interface TemplateRec {
   builtin: boolean;
   /** userID that added a non-builtin template. */
   owner?: string;
+  /** Hypervisor ID of the built template. */
+  vmid?: number;
 }
 
 export interface AnsibleItemRec {
@@ -179,10 +182,14 @@ export interface State {
   settings: {
     /** Simulated seconds that pass per real second. `0` means "instant". */
     speed: number;
+    /** Key for the few secrets stored reversibly. */
+    secretKey: string;
+    /** The range host's (simulated) VPN public key. */
+    wireguardPublicKey: string;
   };
 }
 
-export function emptyState(speed: number): State {
+export function emptyState(speed: number, secretKey: string, wireguardPublicKey: string): State {
   return {
     schema: 1,
     nextVmId: 100,
@@ -194,6 +201,6 @@ export function emptyState(speed: number): State {
     ansible: [],
     logHistory: [],
     sessions: {},
-    settings: { speed },
+    settings: { speed, secretKey, wireguardPublicKey },
   };
 }

@@ -10,3 +10,6 @@ export * from './config/lint';
 export * from './config/validate';
 export * from './firewall/chains';
 export * from './firewall/evaluate';
+export * from './range/derive';
+export * from './templates/catalog';
+export * from './blueprints/library';
