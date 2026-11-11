@@ -35,9 +35,9 @@ function DragPreview({ label, sub, os }: { label: string; sub: string; os: Templ
   return (
     <div className="drag-preview">
       <OsGlyph os={os === 'other' ? undefined : os} />
-      <div>
-        <div className="vm__title">{label}</div>
-        <div className="vm__sub">{sub}</div>
+      <div className="grow">
+        <div className="vm__title truncate">{label}</div>
+        <div className="vm__sub truncate">{sub}</div>
       </div>
     </div>
   );
