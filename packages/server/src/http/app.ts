@@ -3,7 +3,7 @@ import { extname, join, normalize, resolve, sep } from 'node:path';
 import { Hono } from 'hono';
 import { HTTPException } from 'hono/http-exception';
 import { bgRoutes, publicBgRoutes } from '../routes/bg';
-import { ludusRoutes } from '../routes/ludus';
+import { ludusRoutes, versionBody } from '../routes/ludus';
 import { pocketbaseRoutes } from '../routes/pocketbase';
 import type { World } from '../world';
 import { type Env, authenticate } from './context';
@@ -70,6 +70,8 @@ export function createApp(world: World, options: { publicDir: string | null }): 
   app.route('/api/bg', publicBgRoutes(world));
   for (const prefix of ['/api/v2', '/api/bg', '/api/collections']) app.use(`${prefix}/*`, authenticate(world));
   app.use('/api/v2', authenticate(world));
+  // `ludus version` asks for /api/v2/ (with the slash); routes mounted at '/' only match /api/v2.
+  app.get('/api/v2/', (c) => c.json(versionBody()));
   app.route('/api/v2', ludusRoutes(world));
   app.route('/api/bg', bgRoutes(world));
   app.route('/api/collections', pocketbaseRoutes(world));

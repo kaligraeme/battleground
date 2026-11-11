@@ -23,12 +23,17 @@ function requireAdmin(user: UserRec, message: string): void {
   if (!user.isAdmin) throw forbidden(message);
 }
 
+/** `GET /api/v2/`: what `ludus version` prints as the server version. */
+export function versionBody(): { version: string; result: string } {
+  const version = `${VERSION}+battleground`;
+  return { version, result: `Battleground ${version} (Ludus API compatible) - ${LICENSE_MESSAGE}` };
+}
+
 export function ludusRoutes(world: World): Hono<Env> {
   const api = new Hono<Env>();
 
   // ---------------------------------------------------------------- version
-  const version = `${VERSION}+battleground`;
-  api.get('/', (c) => c.json({ version, result: `Battleground ${version} (Ludus API compatible) - ${LICENSE_MESSAGE}` }));
+  api.get('/', (c) => c.json(versionBody()));
   api.get('/license', (c) => c.json({ active: true, entitlements: [], expires_at: null, licensed_to: '', message: LICENSE_MESSAGE }));
   api.get('/whoami', (c) => {
     const caller = c.get('caller');

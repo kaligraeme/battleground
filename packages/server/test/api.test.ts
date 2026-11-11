@@ -47,6 +47,15 @@ describe('authentication', () => {
     expect(await call('GET', '/api/v2/range', { key: 'BG.wrong' })).toMatchObject({ status: 401, data: { error: 'Invalid API key' } });
   });
 
+  it('answers `ludus version` at /api/v2/, with or without the slash', async () => {
+    for (const path of ['/api/v2/', '/api/v2']) {
+      const res = await call('GET', path, { key: adminKey });
+      expect(res.status).toBe(200);
+      expect(res.data.result).toMatch(/^Battleground .* \(Ludus API compatible\)/);
+    }
+    expect((await call('GET', '/api/v2/')).status).toBe(401);
+  });
+
   it('lets admins impersonate, and nobody else', async () => {
     const { data } = await call('POST', '/api/v2/user', { key: adminKey, json: { userID: 'JD', name: 'John Doe', email: 'jd@example.test' } });
     const jdKey = data.apiKey as string;

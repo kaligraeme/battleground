@@ -1,0 +1,19 @@
+# docker compose up -d   then open http://localhost:8080
+# The admin password and API key are printed on first start: docker compose logs battleground
+services:
+  battleground:
+    build: .
+    image: battleground:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - battleground-data:/data
+    environment:
+      # Simulated seconds per real second for deployments and template builds (0 = instant).
+      BATTLEGROUND_SPEED: "60"
+      # Set a known first-run admin password instead of a generated one:
+      # BATTLEGROUND_ADMIN_PASSWORD: "change-me-please"
+    restart: unless-stopped
+
+volumes:
+  battleground-data:

@@ -10,3 +10,4 @@ coverage/
 .env
 .env.*
 !.env.example
+.e2e-data/

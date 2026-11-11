@@ -19,10 +19,11 @@
     "typecheck": "tsc -p packages/core --noEmit && tsc -p packages/server --noEmit && tsc -p packages/web --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "e2e": "playwright test",
+    "e2e": "npm run build && playwright test",
     "check": "npm run typecheck && npm run test"
   },
   "devDependencies": {
+    "@playwright/test": "1.63.0",
     "@types/node": "^22.20.5",
     "@vitejs/plugin-react": "^6.3.0",
     "concurrently": "^10.0.7",
