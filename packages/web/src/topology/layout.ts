@@ -204,7 +204,8 @@ export function tracePath(layout: Layout, from: Endpoint, to: Endpoint): TracePa
   }
   const inbound = toRouter(layout, from);
   const outbound = toRouter(layout, to).reverse();
-  return { inbound, outbound, decisionPoint: mid(layout.router), viaRouter: true };
+  // The verdict sits on the router's top edge, so it never hides the router's name.
+  return { inbound, outbound, decisionPoint: { x: layout.router.x + layout.router.w / 2, y: layout.router.y - 4 }, viaRouter: true };
 }
 
 export function polyline(points: Point[]): string {

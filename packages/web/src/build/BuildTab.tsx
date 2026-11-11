@@ -93,14 +93,19 @@ function BuildEditor({ rangeId, savedText }: { rangeId: string; savedText: strin
     [rangeId, session, meta],
   );
   const validation = useMemo(() => validateConfigText(draft.text, ctx), [draft.text, ctx]);
-  const syntaxBroken = validation.parsed.problems.length > 0 || !isObject(validation.parsed.value);
-  const lastGood = useRef<RangeConfig | undefined>(undefined);
-  if (!syntaxBroken) lastGood.current = validation.parsed.value as RangeConfig;
-  const config = lastGood.current;
+  const syntaxBroken = validation.parsed.problems.length > 0;
+  // Half-typed text is often valid YAML that is no longer a range (`bludus:`), so the map keeps
+  // the last version that had a machine list and the inspector waits until there is one again.
+  const value = validation.parsed.value;
+  const drawable = !syntaxBroken && isObject(value) && Array.isArray(value.ludus);
+  const lastDrawable = useRef<RangeConfig | undefined>(undefined);
+  if (drawable) lastDrawable.current = value as unknown as RangeConfig;
+  const config = drawable ? (value as unknown as RangeConfig) : undefined;
+  const shown = lastDrawable.current;
 
   const model = useMemo(
-    () => buildTopologyModel({ config, rangeId, rangeNumber, issues: validation.issues, vpnClientIp: `198.51.100.${session?.user.userNumber ?? 2}` }),
-    [config, rangeId, rangeNumber, validation.issues, session],
+    () => buildTopologyModel({ config: shown, rangeId, rangeNumber, issues: validation.issues, vpnClientIp: `198.51.100.${session?.user.userNumber ?? 2}` }),
+    [shown, rangeId, rangeNumber, validation.issues, session],
   );
 
   const errors = validation.issues.filter((i) => i.severity === 'error');
@@ -117,10 +122,12 @@ function BuildEditor({ rangeId, savedText }: { rangeId: string; savedText: strin
   );
 
   const addTemplate = useCallback(
-    (template: TemplateEntry, vlan?: number) => {
+    /** `auto` adds to the selected VLAN (or a new one); `new` always starts a new VLAN. */
+    (template: TemplateEntry, where: number | 'auto' | 'new') => {
       let added = -1;
       apply((c) => {
-        const target = vlan ?? (selection?.kind === 'vlan' ? selection.vlan : selection?.kind === 'vm' ? c.ludus[selection.index]?.vlan : undefined) ?? nextVlan(c);
+        const selected = selection?.kind === 'vlan' ? selection.vlan : selection?.kind === 'vm' ? c.ludus[selection.index]?.vlan : undefined;
+        const target = typeof where === 'number' ? where : where === 'auto' ? (selected ?? nextVlan(c)) : nextVlan(c);
         added = c.ludus.length;
         c.ludus.push(newVm(c, template, target));
       });
@@ -139,8 +146,8 @@ function BuildEditor({ rangeId, savedText }: { rangeId: string; savedText: strin
   const onDragStart = (event: DragStartEvent) => {
     const data = event.active.data.current as { type: string; template?: TemplateEntry; index?: number } | undefined;
     if (data?.type === 'template' && data.template) setDragLabel({ label: data.template.label, sub: data.template.name, os: data.template.os });
-    else if (data?.type === 'vm' && data.index !== undefined && config) {
-      const vm = config.ludus?.[data.index];
+    else if (data?.type === 'vm' && data.index !== undefined && shown) {
+      const vm = shown.ludus?.[data.index];
       if (vm) setDragLabel({ label: String(vm.hostname).replace(/\{\{\s*range_id\s*\}\}/g, rangeId), sub: vm.template, os: vm.windows ? 'windows' : vm.macos ? 'macos' : 'linux' });
     }
   };
@@ -154,7 +161,7 @@ function BuildEditor({ rangeId, savedText }: { rangeId: string; savedText: strin
     if (!target) return;
     if (data.type === 'template' && data.template) {
       if (target.type === 'lane' && target.vlan !== undefined) addTemplate(data.template, target.vlan);
-      else if (over.id === NEW_LANE_DROP_ID && config) addTemplate(data.template, nextVlan(config));
+      else if (over.id === NEW_LANE_DROP_ID) addTemplate(data.template, 'new');
     } else if (data.type === 'vm' && data.index !== undefined) {
       const index = data.index;
       if (target.type === 'lane' && target.vlan !== undefined) apply((c) => moveVm(c, index, target.vlan as number));
@@ -227,7 +234,15 @@ function BuildEditor({ rangeId, savedText }: { rangeId: string; savedText: strin
   };
 
   const inspector = (() => {
-    if (!config) return <div className="empty">Fix the YAML to edit visually.</div>;
+    if (!config) {
+      return (
+        <div className="empty">
+          <TriangleAlert />
+          <div className="empty__title">{syntaxBroken ? 'Fix the YAML to edit visually' : 'No machine list'}</div>
+          <p className="text-sm">{syntaxBroken ? 'The Problems tab shows where the syntax error is.' : 'A range config needs a top-level ludus: list. Add one in the YAML, or drag a template onto the map.'}</p>
+        </div>
+      );
+    }
     if (showDefaults) return <DefaultsInspector config={config} apply={apply} />;
     if (selection?.kind === 'vm') {
       return <VmInspector config={config} index={selection.index} apply={apply} issues={validation.issues} meta={meta} rangeId={rangeId} rangeNumber={rangeNumber} onSelect={setSelection} />;
@@ -311,7 +326,7 @@ function BuildEditor({ rangeId, savedText }: { rangeId: string; savedText: strin
               templates={meta?.templates ?? []}
               builtin={meta?.builtinBlueprints ?? []}
               blueprints={meta?.blueprints ?? []}
-              onAdd={(t) => addTemplate(t)}
+              onAdd={(t) => addTemplate(t, 'auto')}
               onLoadBlueprint={(text, name) => {
                 if (dirty && !window.confirm(`Replace the current draft with “${name}”? You can undo this.`)) return;
                 draft.reset(text, { keepHistory: true });
@@ -344,10 +359,10 @@ function BuildEditor({ rangeId, savedText }: { rangeId: string; savedText: strin
                     </>
                   }
                 >
-                  {syntaxBroken ? (
+                  {!drawable && shown ? (
                     <div className="canvas__banner" data-nopan>
                       <TriangleAlert size={15} />
-                      The YAML has a syntax error. The diagram shows the last valid version until it is fixed.
+                      {syntaxBroken ? 'The YAML has a syntax error.' : 'The config has no ludus: list of machines.'} The map shows the last complete version until that is fixed.
                     </div>
                   ) : null}
                 </Topology>

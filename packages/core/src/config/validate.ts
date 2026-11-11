@@ -6,6 +6,9 @@ import { formatSchemaError, validateSchema } from './schema';
 import type { RangeConfig } from './types';
 import { type ParsedYaml, type SourceRange, locate, parseYaml } from './yaml';
 
+/** How many YAML syntax errors to report; the parser's later ones are usually knock-on effects of the first. */
+const MAX_SYNTAX_ERRORS = 3;
+
 export interface ValidationResult {
   /** The parsed document, for comment-preserving edits. */
   parsed: ParsedYaml;
@@ -65,7 +68,8 @@ export function validateConfigText(text: string, options: ValidateOptions = {}):
   } else if (parsed.problems.length > 0) {
     const first = parsed.problems[0];
     ludusError = `can't parse input: invalid YAML: ${first?.message ?? 'syntax error'}`;
-    for (const problem of parsed.problems) {
+    // After the first syntax error the parser's later complaints are mostly echoes of it; keep a few.
+    for (const problem of parsed.problems.slice(0, MAX_SYNTAX_ERRORS)) {
       issues.push({
         severity: 'error',
         source: 'yaml',

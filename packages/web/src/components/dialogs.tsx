@@ -111,8 +111,14 @@ export function TemplatesDialog({ open, onClose }: { open: boolean; onClose: () 
     let stopped = false;
     cursor.current = undefined;
     setLog('');
+    // Like Ludus, the server answers 500 until a first build has written a packer log; don't ask before then.
+    let hasLog = false;
     const tick = async () => {
       await loadMeta().catch(() => undefined);
+      if (!hasLog) {
+        hasLog = (await api.templateHistory().catch(() => [])).length > 0;
+        if (!hasLog) return;
+      }
       try {
         const res = await api.templateLogs(cursor.current);
         if (!stopped && res.result) setLog((prev) => (cursor.current === undefined ? res.result : prev + res.result));

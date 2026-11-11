@@ -307,6 +307,7 @@ export const api = {
   abortBuilds: () => json<{ result: string }>('POST', v2('/templates/abort')),
   deleteTemplate: (name: string) => json<{ result: string }>('DELETE', v2(`/template/${encodeURIComponent(name)}`)),
   templateLogs: (cursor?: number) => json<{ result: string; cursor: number }>('GET', v2('/templates/logs'), { query: { cursor } }),
+  templateHistory: () => json<HistoryEntry[]>('GET', v2('/templates/logs/history')),
 
   installRole: (name: string, kind: 'role' | 'collection' = 'role') =>
     json<{ result: string }>('POST', v2(kind === 'role' ? '/ansible/role' : '/ansible/collection'), {
