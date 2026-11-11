@@ -1,0 +1,13 @@
+{
+  "name": "@battleground/core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Range-config model, validation, addressing and firewall simulation shared by the Battleground server and web UI",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "yaml": "^2.9.1"
+  }
+}

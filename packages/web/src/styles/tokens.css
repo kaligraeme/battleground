@@ -1,0 +1,175 @@
+/*
+ * Design tokens.
+ *
+ * Dark is the default ("ops room"); light is a full second theme, selected with
+ * data-theme="light" on <html> or, when no explicit choice was made, by the OS.
+ */
+
+:root {
+  color-scheme: dark;
+
+  --font-sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  /* Type scale (dense tool UI) */
+  --fs-xs: 11px;
+  --fs-sm: 12px;
+  --fs-md: 13px;
+  --fs-lg: 15px;
+  --fs-xl: 18px;
+  --fs-2xl: 24px;
+
+  /* Spacing (4px grid) */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+
+  --radius-sm: 4px;
+  --radius: 7px;
+  --radius-lg: 11px;
+  --radius-pill: 999px;
+
+  --control-h: 32px;
+  --control-h-sm: 26px;
+  --topbar-h: 52px;
+
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --dur-1: 120ms;
+  --dur-2: 220ms;
+
+  /* Surfaces */
+  --bg-0: #090c12;
+  --bg-1: #0f131b;
+  --bg-2: #151a24;
+  --bg-3: #1c222e;
+  --bg-4: #252c3b;
+  --line: #222938;
+  --line-strong: #323c4f;
+  --overlay: rgba(4, 6, 10, 0.66);
+  --shadow-pop: 0 14px 40px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.35);
+  --grid-dot: rgba(148, 163, 184, 0.13);
+
+  /* Text */
+  --text: #e8ecf4;
+  --text-2: #a6b0c3;
+  --text-3: #707b90;
+  --text-inv: #0a0d13;
+
+  /* Interactive */
+  --accent: #5b9dff;
+  --accent-hi: #86b7ff;
+  --accent-soft: rgba(91, 157, 255, 0.14);
+  --accent-line: rgba(91, 157, 255, 0.45);
+  --on-accent: #051022;
+
+  /* Status */
+  --ok: #34d399;
+  --ok-soft: rgba(52, 211, 153, 0.13);
+  --warn: #fbbf24;
+  --warn-soft: rgba(251, 191, 36, 0.13);
+  --err: #fb7185;
+  --err-soft: rgba(251, 113, 133, 0.13);
+  --drop: #f59e6c;
+  --drop-soft: rgba(245, 158, 108, 0.13);
+  --testing: #b197fc;
+  --testing-soft: rgba(177, 151, 252, 0.14);
+  --idle: #6b768b;
+  --idle-soft: rgba(107, 118, 139, 0.16);
+
+  /* VLAN lane colour: lightness/chroma fixed, hue supplied per lane via --vlan-hue */
+  --vlan-l: 0.78;
+  --vlan-c: 0.115;
+  --vlan-tint-alpha: 0.07;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --bg-0: #f3f5f8;
+  --bg-1: #ffffff;
+  --bg-2: #f7f8fa;
+  --bg-3: #eceff3;
+  --bg-4: #e1e5eb;
+  --line: #dfe3ea;
+  --line-strong: #c5ccd7;
+  --overlay: rgba(20, 26, 36, 0.4);
+  --shadow-pop: 0 14px 40px rgba(20, 30, 50, 0.16), 0 2px 8px rgba(20, 30, 50, 0.1);
+  --grid-dot: rgba(71, 85, 105, 0.17);
+
+  --text: #131923;
+  --text-2: #4a5567;
+  --text-3: #7b8597;
+  --text-inv: #ffffff;
+
+  --accent: #2463eb;
+  --accent-hi: #1d4fd8;
+  --accent-soft: rgba(36, 99, 235, 0.09);
+  --accent-line: rgba(36, 99, 235, 0.4);
+  --on-accent: #ffffff;
+
+  --ok: #0a8f63;
+  --ok-soft: rgba(10, 143, 99, 0.1);
+  --warn: #b26a00;
+  --warn-soft: rgba(217, 140, 0, 0.13);
+  --err: #d92d4b;
+  --err-soft: rgba(217, 45, 75, 0.09);
+  --drop: #c2570c;
+  --drop-soft: rgba(194, 87, 12, 0.1);
+  --testing: #6d42d8;
+  --testing-soft: rgba(109, 66, 216, 0.09);
+  --idle: #7b8597;
+  --idle-soft: rgba(123, 133, 151, 0.14);
+
+  --vlan-l: 0.56;
+  --vlan-c: 0.14;
+  --vlan-tint-alpha: 0.06;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    color-scheme: light;
+
+    --bg-0: #f3f5f8;
+    --bg-1: #ffffff;
+    --bg-2: #f7f8fa;
+    --bg-3: #eceff3;
+    --bg-4: #e1e5eb;
+    --line: #dfe3ea;
+    --line-strong: #c5ccd7;
+    --overlay: rgba(20, 26, 36, 0.4);
+    --shadow-pop: 0 14px 40px rgba(20, 30, 50, 0.16), 0 2px 8px rgba(20, 30, 50, 0.1);
+    --grid-dot: rgba(71, 85, 105, 0.17);
+
+    --text: #131923;
+    --text-2: #4a5567;
+    --text-3: #7b8597;
+    --text-inv: #ffffff;
+
+    --accent: #2463eb;
+    --accent-hi: #1d4fd8;
+    --accent-soft: rgba(36, 99, 235, 0.09);
+    --accent-line: rgba(36, 99, 235, 0.4);
+    --on-accent: #ffffff;
+
+    --ok: #0a8f63;
+    --ok-soft: rgba(10, 143, 99, 0.1);
+    --warn: #b26a00;
+    --warn-soft: rgba(217, 140, 0, 0.13);
+    --err: #d92d4b;
+    --err-soft: rgba(217, 45, 75, 0.09);
+    --drop: #c2570c;
+    --drop-soft: rgba(194, 87, 12, 0.1);
+    --testing: #6d42d8;
+    --testing-soft: rgba(109, 66, 216, 0.09);
+    --idle: #7b8597;
+    --idle-soft: rgba(123, 133, 151, 0.14);
+
+    --vlan-l: 0.56;
+    --vlan-c: 0.14;
+    --vlan-tint-alpha: 0.06;
+  }
+}
