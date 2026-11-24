@@ -189,7 +189,6 @@ export class Instance {
       step: 0,
       inIntro: false,
       nextStepAt: 0,
-      pendingResolves: 0,
     };
     this.monsters.set(m.id, m);
     this.emit({ e: 'spawn', ent: this.spawnInfo(m) });
@@ -237,7 +236,6 @@ export class Instance {
       step: 0,
       inIntro: false,
       nextStepAt: 0,
-      pendingResolves: 0,
     };
     this.monsters.set(m.id, m);
     return m;

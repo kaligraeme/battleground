@@ -115,7 +115,6 @@ export interface Monster extends ActorBase {
   step: number;
   inIntro: boolean;
   nextStepAt: number;
-  pendingResolves: number;
 }
 
 export type Actor = Player | Monster;

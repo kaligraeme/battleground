@@ -109,7 +109,7 @@ wss.on('connection', (ws: WebSocket) => {
     if (playerId) lobby.handle(playerId, msg);
   });
   ws.on('close', () => {
-    if (playerId) lobby.disconnect(playerId);
+    if (playerId) lobby.disconnect(playerId, Date.now(), conn);
   });
 });
 

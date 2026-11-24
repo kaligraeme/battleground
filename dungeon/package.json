@@ -16,7 +16,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "e2e": "npm run build && playwright test --trace off",
-    "simulate": "tsx scripts/simulate.ts"
+    "simulate": "tsx scripts/simulate.ts",
+    "check": "npm run typecheck && npm run test"
   },
   "dependencies": {
     "ws": "^8.18.3"

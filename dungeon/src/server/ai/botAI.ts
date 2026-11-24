@@ -222,10 +222,18 @@ function spreadSpot(ctx: Ctx, mark: Telegraph): Vec {
   return { x: caster.x + Math.cos(angle) * (radius + 1.5), y: caster.y + Math.sin(angle) * (radius + 1.5) };
 }
 
+/**
+ * Who leads between fights: a human tank, otherwise the AI tank (who guides the party through
+ * the dungeon and waits for the players), otherwise the first human.
+ */
+export function pilotOf(inst: Instance): Player | undefined {
+  const alive = inst.players.filter((o) => !o.dead);
+  return alive.find((o) => o.role === 'tank' && !o.botControlled) ?? alive.find((o) => o.role === 'tank') ?? alive.find((o) => !o.botControlled) ?? alive[0];
+}
+
 function followSpot(ctx: Ctx): Vec {
   const { inst, p } = ctx;
-  const human = inst.players.find((o) => !o.botControlled && !o.dead);
-  const pilot = human ?? inst.players.find((o) => !o.dead && o.role === 'tank') ?? inst.players.find((o) => !o.dead);
+  const pilot = pilotOf(inst);
   if (!pilot) return p;
   if (pilot === p) return objectiveSpot(ctx);
   const slot = inst.players.indexOf(p);
@@ -234,12 +242,17 @@ function followSpot(ctx: Ctx): Vec {
   return circleFree(inst.map, spot.x, spot.y, p.radius) ? spot : { x: pilot.x, y: pilot.y };
 }
 
-/** Where an AI party leader heads next: into the next uncleared room. */
+/** Where an AI party leader heads next: into the next uncleared room, once everyone is ready. */
 function objectiveSpot(ctx: Ctx): Vec {
   const { inst, p } = ctx;
   if (inst.phase === 'countdown') return p;
   const duty = inst.rooms.find((r) => r.status !== 'cleared');
   if (!duty) return p;
+  // Wait for players who are lagging behind, and let everyone recover before the next pull.
+  const humans = inst.players.filter((o) => !o.botControlled && !o.dead);
+  if (humans.some((o) => dist(o, p) > 14)) return p;
+  const resting = inst.players.some((o) => !o.dead && (o.hp < o.maxHp * 0.7 || (o.maxMp > 0 && o.mp < o.maxMp * 0.5)));
+  if (resting && duty.status === 'idle') return p;
   if (duty.plan.kind === 'boss' && duty.bossId != null) {
     const boss = inst.monsters.get(duty.bossId);
     if (boss) return { x: boss.x + Math.cos(boss.facing) * (boss.radius + 1), y: boss.y + Math.sin(boss.facing) * (boss.radius + 1) };

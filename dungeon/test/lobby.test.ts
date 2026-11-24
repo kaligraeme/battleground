@@ -91,4 +91,17 @@ describe('lobby', () => {
     expect(run.inst.playerByOwner(a.id)?.botControlled).toBe(false);
     expect(inbox.some((m) => m.t === 'instance.start')).toBe(true);
   });
+
+  it('a late close from an old socket does not disconnect the new one', () => {
+    const lobby = new Lobby();
+    const oldConn: Conn = { send: () => {} };
+    const id = lobby.connect(oldConn, 'Alice', undefined, 0);
+    const token = lobby.players.get(id)!.token;
+    const newConn: Conn = { send: () => {} };
+    lobby.connect(newConn, 'Alice', token, 10);
+    lobby.disconnect(id, 20, oldConn);
+    expect(lobby.players.get(id)!.conn).toBe(newConn);
+    lobby.disconnect(id, 30, newConn);
+    expect(lobby.players.get(id)!.conn).toBeNull();
+  });
 });

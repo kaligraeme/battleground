@@ -4,7 +4,7 @@
  */
 import { randomBytes, randomUUID } from 'node:crypto';
 import { READY_CHECK_SECONDS, SNAPSHOT_EVERY } from '../shared/constants.js';
-import { isValidLoadout, ROLE_ORDER, ROLES, WEAPONS, type RoleId } from '../shared/content/classes.js';
+import { isValidLoadout, ROLE_ORDER, ROLES, type RoleId } from '../shared/content/classes.js';
 import type { AiFill, ClientMsg, LobbyState, PartyView, QueueView, ReadyCheckView, ServerMsg } from '../shared/protocol.js';
 import { generateDungeon } from './dungeonGen.js';
 import { findMatches, assemble, rolesFree, type QueueEntry } from './matchmaker.js';
@@ -105,9 +105,11 @@ export class Lobby {
     return id;
   }
 
-  disconnect(playerId: string, now = Date.now()): void {
+  /** A socket closed. Ignored if the player has already reconnected on another socket. */
+  disconnect(playerId: string, now = Date.now(), conn?: Conn): void {
     const p = this.players.get(playerId);
     if (!p) return;
+    if (conn && p.conn !== conn) return;
     p.conn = null;
     p.lastSeen = now;
     const run = p.instanceId ? this.instances.get(p.instanceId) : undefined;
@@ -498,9 +500,5 @@ export class Lobby {
       changed = true;
     }
     if (changed) this.broadcastLobby(now);
-  }
-
-  weaponName(id: string): string {
-    return WEAPONS[id]?.name ?? id;
   }
 }
